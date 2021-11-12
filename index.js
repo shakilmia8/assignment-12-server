@@ -41,6 +41,7 @@ async function run() {
         await client.connect();
         const database = client.db("autoMotor's_car");
         const productsCollection = database.collection('products');
+        const reviewsCollection = database.collection('reviews');
         const ordersCollection = database.collection('orders');
         const usersCollection = database.collection('users');
 
@@ -52,12 +53,18 @@ async function run() {
             res.json(products);
         });
 
-        app.get('/products/:id', async (req, res) => {
+        app.get('/products/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await productsCollection.findOne(query);
             res.json(product);
         });
+
+        app.get('/reviews', verifyToken, async (req, res) => {
+            const cursor = reviewsCollection.find({});
+            const reviews = await cursor.toArray();
+            res.json(reviews);
+        })
 
         app.get('/orders', verifyToken, async (req, res) => {
             const email = req.query.email;
@@ -73,13 +80,19 @@ async function run() {
             res.send(services);
         }); */
 
-        app.post('/products', async (req, res) => {
+        app.post('/products', verifyToken, async (req, res) => {
             const product = req.body;
-            const result = await productCollection.insertOne(product);
+            const result = await productsCollection.insertOne(product);
             res.json(result);
         });
 
-        app.post('/orders', async (req, res) => {
+        app.post('/reviews', verifyToken, async (req, res) => {
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            res.json(result);
+        })
+
+        app.post('/orders', verifyToken, async (req, res) => {
             const order = req.body;
             const result = await ordersCollection.insertOne(order);
             res.json(result);
@@ -100,7 +113,7 @@ async function run() {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.json(result);
-        })
+        });
 
         app.put('/users', async (req, res) => {
             const user = req.body;
@@ -109,7 +122,7 @@ async function run() {
             const updateDoc = { $set: user };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
             res.json(result);
-        })
+        });
 
         app.put('/users/admin', verifyToken, async (req, res) => {
             const user = req.body;
