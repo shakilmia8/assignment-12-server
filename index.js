@@ -141,7 +141,7 @@ async function run() {
             }
         })
 
-        app.put('/products/:id', async(req, res)=>{
+        app.put('/products/:id', verifyToken, async(req, res)=>{
             const id = req.params.id;
             const updatedProduct = req.body;
             const filter = {_id: ObjectId(id)};
@@ -159,10 +159,17 @@ async function run() {
                 res.json(result);
         })
 
-        app.delete('/products/:id', async(req, res)=>{
+        app.delete('/products/:id', verifyToken, async(req, res)=>{
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
             const result = await productsCollection.deleteOne(query);
+            res.json(result);
+        });
+        
+        app.delete('/orders/:id', verifyToken, async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await ordersCollection.deleteOne(query);
             res.json(result);
         });
 
