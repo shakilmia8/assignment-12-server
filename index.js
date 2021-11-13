@@ -74,11 +74,11 @@ async function run() {
             res.json(orders);
         });
 
-        /* app.get('/orders', verifyToken, async (req, res) => {
+        app.get('/orders/allOrders', verifyToken, async (req, res) => {
             const items = ordersCollection.find({});
             const services = await items.toArray();
             res.send(services);
-        }); */
+        });
 
         app.post('/products', verifyToken, async (req, res) => {
             const product = req.body;
@@ -140,6 +140,32 @@ async function run() {
                 res.status(401).json({ message: 'you do not have access to make an admin!!!' })
             }
         })
+
+        app.put('/products/:id', async(req, res)=>{
+            const id = req.params.id;
+            const updatedProduct = req.body;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+            const updateDoc = {
+                $set:{
+                    name: updatedProduct.name,
+                    price: updatedProduct.price,
+                    launched: updatedProduct.launched,
+                    img:updatedProduct.img,
+                    describe: updatedProduct.describe
+                },
+            };
+                const result = await productsCollection.updateOne(filter, updateDoc, options);
+                res.json(result);
+        })
+
+        app.delete('/products/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await productsCollection.deleteOne(query);
+            res.json(result);
+        });
+
     }
     finally {
         // await client.close();
